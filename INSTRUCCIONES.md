@@ -1,794 +1,382 @@
-# 📖 Instrucciones Detalladas — Paso a Paso
+# Guia de Instalacion y Ejecucion
 
-Guía completa para configurar, ejecutar y probar el proyecto de balanceo de carga desde cero. No se salta ningún paso.
+Guia detallada para la puesta en marcha, verificacion y pruebas de carga del entorno con HAProxy, Docker, FastAPI y React.
 
----
-
-## 📋 Tabla de Contenidos
+## Tabla de Contenidos
 
 1. [Prerrequisitos](#1-prerrequisitos)
-2. [Instalación de Docker Desktop](#2-instalación-de-docker-desktop)
-3. [Verificar la Instalación de Docker](#3-verificar-la-instalación-de-docker)
-4. [Clonar o Descargar el Proyecto](#4-clonar-o-descargar-el-proyecto)
-5. [Entender la Estructura del Proyecto](#5-entender-la-estructura-del-proyecto)
-6. [Construir y Levantar los Contenedores](#6-construir-y-levantar-los-contenedores)
-7. [Verificar que los Contenedores Están Corriendo](#7-verificar-que-los-contenedores-están-corriendo)
-8. [Probar la Aplicación](#8-probar-la-aplicación)
-9. [Verificar el Balanceo de Carga](#9-verificar-el-balanceo-de-carga)
-10. [Monitorear con HAProxy Stats](#10-monitorear-con-haproxy-stats)
-11. [Pruebas de Carga con JMeter](#11-pruebas-de-carga-con-jmeter)
-12. [Comandos Docker Útiles](#12-comandos-docker-útiles)
-13. [Detener y Limpiar Todo](#13-detener-y-limpiar-todo)
-14. [Solución de Problemas](#14-solución-de-problemas)
+2. [Instalacion de Docker](#2-instalacion-de-docker)
+3. [Verificacion de Docker](#3-verificacion-de-docker)
+4. [Estructura del Proyecto](#4-estructura-del-proyecto)
+5. [Construccion y Despliegue](#5-construccion-y-despliegue)
+6. [Verificacion de Servicios](#6-verificacion-de-servicios)
+7. [Pruebas de Funcionamiento](#7-pruebas-de-funcionamiento)
+8. [Verificacion del Balanceo de Carga](#8-verificacion-del-balanceo-de-carga)
+9. [Monitoreo en HAProxy Stats](#9-monitoreo-en-haproxy-stats)
+10. [Pruebas de Rendimiento con JMeter](#10-pruebas-de-rendimiento-con-jmeter)
+11. [Comandos Utiles de Docker](#11-comandos-utiles-de-docker)
+12. [Detencion y Limpieza](#12-detencion-y-limpieza)
+13. [Solucion de Problemas Frecuentes](#13-solucion-de-problemas-frecuentes)
 
 ---
 
 ## 1. Prerrequisitos
 
-Antes de comenzar, asegúrate de tener lo siguiente instalado en tu computadora:
+### Software
 
-### Software Necesario
-
-| Software | Versión Mínima | Para qué se usa |
-|----------|---------------|-----------------|
-| **Docker Desktop** | 4.0+ | Ejecutar contenedores |
-| **Docker Compose** | v2 (incluido en Docker Desktop) | Orquestar múltiples contenedores |
-| **Git** (opcional) | Cualquiera | Clonar el repositorio |
-| **Apache JMeter** (opcional) | 5.6+ | Pruebas de carga |
-| **curl** (opcional) | Cualquiera | Probar endpoints desde terminal |
+- **Docker Desktop** (en Windows/macOS) o **Docker Engine + Docker Compose v2** (en Linux).
+- **Git** (opcional, para clonar y gestionar el repositorio).
+- **Apache JMeter 5.6+** (opcional, para ejecutar las pruebas de carga).
+- **Java JRE/JDK 8+** (necesario solo si se utiliza JMeter).
+- **curl** o PowerShell (para pruebas de endpoint por consola).
 
 ### Requisitos del Sistema
 
-- **Sistema Operativo**: Windows 10/11, macOS 10.15+, o Linux
-- **RAM**: Mínimo 4 GB libres (recomendado 8 GB)
-- **Espacio en disco**: Al menos 5 GB libres
-- **Puertos disponibles**: 80 y 3000 (no deben estar en uso por otra aplicación)
+- Sistema Operativo: Windows 10/11 (64-bit), Linux o macOS.
+- Puertos libres: `80` (HAProxy) y `3000` (Frontend).
 
 ---
 
-## 2. Instalación de Docker Desktop
+## 2. Instalacion de Docker
 
 ### En Windows
 
-1. **Descargar Docker Desktop**:
-   - Ve a https://www.docker.com/products/docker-desktop/
-   - Haz clic en **"Download for Windows"**.
-   - Descarga el archivo `Docker Desktop Installer.exe`.
-
-2. **Instalar**:
-   - Ejecuta el instalador descargado.
-   - Acepta los términos de licencia.
-   - En las opciones de configuración:
-     - ✅ Marca **"Use WSL 2 instead of Hyper-V"** (recomendado para Windows).
-     - ✅ Marca **"Add shortcut to desktop"**.
-   - Haz clic en **"Ok"** e **"Install"**.
-   - Espera a que termine la instalación.
-
-3. **Reiniciar Windows**:
-   - Cuando lo pida, reinicia tu computadora.
-
-4. **Iniciar Docker Desktop**:
-   - Después de reiniciar, abre **Docker Desktop** desde el menú de inicio o el acceso directo del escritorio.
-   - Espera a que el ícono de Docker en la barra de tareas muestre **"Docker Desktop is running"** (el ícono de la ballena deja de moverse).
-   - Si es la primera vez, acepta los términos de servicio.
-
-5. **Habilitar WSL 2** (si no lo tienes):
-   - Abre **PowerShell como Administrador** y ejecuta:
-   ```powershell
-   wsl --install
-   ```
-   - Reinicia si es necesario.
+1. Descargar el instalador desde el sitio oficial de Docker: https://www.docker.com/products/docker-desktop/
+2. Ejecutar `Docker Desktop Installer.exe`.
+3. Asegurarse de mantener seleccionada la opcion de usar WSL 2.
+4. Reiniciar el equipo si el instalador lo solicita.
+5. Iniciar Docker Desktop y esperar hasta que el servicio este en estado activo (running).
 
 ### En macOS
 
-1. Descarga Docker Desktop desde https://www.docker.com/products/docker-desktop/
-2. Abre el archivo `.dmg` descargado.
-3. Arrastra el ícono de Docker a la carpeta **Applications**.
-4. Abre Docker Desktop desde **Applications**.
-5. Espera a que el ícono de Docker en la barra superior muestre que está corriendo.
+1. Descargar Docker Desktop (Intel o Apple Silicon segun el procesador) desde el sitio web oficial.
+2. Abrir el archivo `.dmg` y arrastrar Docker a la carpeta `Applications`.
+3. Abrir la aplicacion y conceder los permisos del sistema requeridos.
 
-### En Linux (Ubuntu/Debian)
+### En Linux (Ubuntu / Debian)
 
 ```bash
-# Actualizar paquetes
+# Actualizar indices de paquetes
 sudo apt-get update
 
-# Instalar dependencias
+# Instalar dependencias previas
 sudo apt-get install -y ca-certificates curl gnupg lsb-release
 
-# Añadir clave GPG de Docker
+# Agregar clave GPG oficial de Docker
 sudo mkdir -p /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 
-# Añadir repositorio de Docker
+# Configurar el repositorio
 echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
   $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-# Instalar Docker Engine y Docker Compose
+# Instalar Docker Engine y Compose
 sudo apt-get update
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
-# Añadir tu usuario al grupo docker (para no necesitar sudo)
+# Permitir ejecutar docker sin sudo (opcional)
 sudo usermod -aG docker $USER
-
-# Cerrar sesión y volver a abrirla para que el cambio de grupo tome efecto
 ```
 
 ---
 
-## 3. Verificar la Instalación de Docker
+## 3. Verificacion de Docker
 
-Abre una **terminal** (PowerShell en Windows, Terminal en macOS/Linux) y ejecuta los siguientes comandos uno por uno:
-
-### 3.1 Verificar Docker
+Abrir una terminal y ejecutar las siguientes comprobaciones:
 
 ```bash
+# Version de Docker
 docker --version
-```
 
-**Salida esperada** (la versión puede variar):
-```
-Docker version 24.0.7, build afdd53b
-```
-
-### 3.2 Verificar Docker Compose
-
-```bash
+# Version de Docker Compose
 docker compose version
-```
 
-**Salida esperada**:
-```
-Docker Compose version v2.23.0
-```
-
-### 3.3 Verificar que Docker está corriendo
-
-```bash
+# Estado del demonio
 docker info
 ```
 
-**Salida esperada**: Debería mostrar información del sistema Docker sin errores. Si ves un error como "Cannot connect to the Docker daemon", significa que Docker Desktop no está corriendo. Ábrelo desde el menú de inicio.
-
-### 3.4 Probar con un contenedor de prueba
-
-```bash
-docker run hello-world
-```
-
-**Salida esperada**: Un mensaje que dice "Hello from Docker!" seguido de una explicación. Esto confirma que Docker puede descargar imágenes y ejecutar contenedores correctamente.
+Si `docker info` responde sin errores de conexion con el socket o demonio, el entorno esta listo.
 
 ---
 
-## 4. Clonar o Descargar el Proyecto
-
-### Opción A: Si tienes el proyecto en un repositorio Git
-
-```bash
-git clone <URL_DEL_REPOSITORIO>
-cd docker-haproxy-main
-```
-
-### Opción B: Si descargaste el ZIP
-
-1. Descarga el archivo ZIP del proyecto.
-2. Descomprímelo en una ubicación conveniente.
-3. Abre una terminal y navega a la carpeta del proyecto:
-
-```bash
-cd "C:\Users\TU_USUARIO\Desktop\Taller balanceo de carga\docker-haproxy-main"
-```
-
-> **⚠ Importante**: Reemplaza `TU_USUARIO` con tu nombre de usuario real de Windows.
-
-### Verificar que estás en la carpeta correcta
-
-```bash
-dir
-```
-
-Deberías ver:
-```
-backend/
-frontend/
-haproxy/
-jmeter/
-docker-compose.yml
-README.md
-INSTRUCCIONES.md
-```
-
----
-
-## 5. Entender la Estructura del Proyecto
-
-Antes de ejecutar nada, revisemos qué hace cada parte:
+## 4. Estructura del Proyecto
 
 ```
 docker-haproxy-main/
-│
-├── backend/                    ← Código del servidor API
-│   ├── Dockerfile              ← Instrucciones para construir la imagen del backend
-│   └── main.py                 ← Código Python con FastAPI
-│
-├── frontend/                   ← Código de la interfaz web
-│   ├── src/
-│   │   ├── App.jsx             ← Componente principal de React
-│   │   └── main.jsx            ← Punto de entrada de React
-│   ├── Dockerfile              ← Instrucciones para construir la imagen del frontend
-│   ├── index.html              ← Página HTML base
-│   ├── package.json            ← Lista de dependencias de Node.js
-│   └── vite.config.js          ← Configuración del servidor de desarrollo
-│
-├── haproxy/                    ← Configuración del balanceador de carga
-│   └── haproxy.cfg             ← Reglas de balanceo y enrutamiento
-│
-├── jmeter/                     ← Pruebas de rendimiento
-│   └── haproxy_load_test.jmx   ← Plan de pruebas de JMeter
-│
-└── docker-compose.yml          ← Archivo maestro que orquesta todos los servicios
+|-- backend/
+|   |-- Dockerfile
+|   `-- main.py
+|-- frontend/
+|   |-- src/
+|   |   |-- App.jsx
+|   |   `-- main.jsx
+|   |-- Dockerfile
+|   |-- index.html
+|   |-- package.json
+|   `-- vite.config.js
+|-- haproxy/
+|   `-- haproxy.cfg
+|-- jmeter/
+|   `-- haproxy_load_test.jmx
+|-- docs/
+|   `-- architecture.png
+|-- docker-compose.yml
+|-- INSTRUCCIONES.md
+`-- README.md
 ```
 
 ---
 
-## 6. Construir y Levantar los Contenedores
+## 5. Construccion y Despliegue
 
-### 6.1 Asegúrate de que Docker Desktop está corriendo
-
-Verifica que el ícono de Docker (🐋) en la barra de tareas esté activo. Si no lo está, abre Docker Desktop y espera a que inicie completamente.
-
-### 6.2 Abre una terminal en la carpeta del proyecto
+Situarse en el directorio raiz del proyecto (donde reside `docker-compose.yml`):
 
 ```bash
-cd "C:\Users\TU_USUARIO\Desktop\Taller balanceo de carga\docker-haproxy-main"
+cd docker-haproxy-main
 ```
 
-### 6.3 Construir las imágenes y levantar los contenedores
+### Iniciar en primer plano
 
-Ejecuta el siguiente comando:
+Permite observar las salidas de log directamente en la terminal:
 
 ```bash
 docker compose up --build
 ```
 
-**Explicación de las banderas**:
-- `docker compose`: Herramienta para manejar múltiples contenedores.
-- `up`: Crea e inicia los contenedores definidos en `docker-compose.yml`.
-- `--build`: Fuerza la reconstrucción de las imágenes Docker (importante la primera vez o cuando cambias código).
-
-### 6.4 ¿Qué pasa cuando ejecutas este comando?
-
-Docker realizará los siguientes pasos automáticamente:
-
-1. **Crear la red** `app-net` (red interna de Docker tipo bridge).
-2. **Construir la imagen del backend**:
-   - Descarga la imagen base `python:3.11-slim` (~50 MB).
-   - Instala `fastapi` y `uvicorn` con pip.
-   - Copia `main.py` al contenedor.
-3. **Construir la imagen del frontend**:
-   - Descarga la imagen base `node:18-alpine` (~120 MB).
-   - Ejecuta `npm install` para instalar React, Vite y plugins.
-   - Copia el código fuente.
-4. **Descargar la imagen de HAProxy** (`haproxy:2.8`).
-5. **Crear 5 contenedores**:
-   - `backend1`, `backend2`, `backend3`
-   - `haproxy`
-   - `frontend`
-6. **Iniciar todos los contenedores** respetando las dependencias.
-
-### 6.5 Tiempo estimado
-
-- **Primera ejecución**: 2-5 minutos (descarga imágenes + instala dependencias).
-- **Ejecuciones posteriores**: 10-30 segundos (usa caché de Docker).
-
-### 6.6 ¿Cómo saber que todo está listo?
-
-Verás mensajes como estos en la terminal:
-
-```
-✔ Network docker-haproxy-main_app-net  Created
-✔ Container docker-haproxy-main-backend1-1  Created
-✔ Container docker-haproxy-main-backend2-1  Created
-✔ Container docker-haproxy-main-backend3-1  Created
-✔ Container docker-haproxy-main-haproxy-1   Created
-✔ Container docker-haproxy-main-frontend-1  Created
-```
-
-Y luego logs como:
-
-```
-backend1-1  | INFO:     Uvicorn running on http://0.0.0.0:8000
-backend2-1  | INFO:     Uvicorn running on http://0.0.0.0:8000
-backend3-1  | INFO:     Uvicorn running on http://0.0.0.0:8000
-frontend-1  |   VITE v4.5.x  ready in xxx ms
-frontend-1  |   ➜  Local:   http://localhost:3000/
-```
-
-> **⚠ No cierres esta terminal**. Los logs se muestran en tiempo real. Si la cierras, los contenedores se detendrán.
-
-### 6.7 Ejecutar en segundo plano (modo detached)
-
-Si prefieres que los contenedores corran en segundo plano y liberar la terminal:
+### Iniciar en segundo plano (modo detached)
 
 ```bash
 docker compose up --build -d
 ```
 
-La bandera `-d` (detached) ejecuta los contenedores en segundo plano. Para ver los logs después:
-
-```bash
-docker compose logs -f
-```
-
-La bandera `-f` (follow) muestra los logs en tiempo real. Presiona `Ctrl+C` para dejar de verlos (los contenedores siguen corriendo).
-
 ---
 
-## 7. Verificar que los Contenedores Están Corriendo
+## 6. Verificacion de Servicios
 
-### 7.1 Listar contenedores activos
-
-Abre una **nueva terminal** (sin cerrar la anterior si no usaste `-d`) y ejecuta:
+Listar los contenedores creados para confirmar que esten en ejecucion:
 
 ```bash
 docker compose ps
 ```
 
-**Salida esperada**:
+Deberian visualizarse 5 contenedores activos:
+- `docker-haproxy-main-backend1-1` (puerto interno 8000)
+- `docker-haproxy-main-backend2-1` (puerto interno 8000)
+- `docker-haproxy-main-backend3-1` (puerto interno 8000)
+- `docker-haproxy-main-frontend-1` (puerto 3000 mapeado)
+- `docker-haproxy-main-haproxy-1`  (puerto 80 mapeado)
 
-```
-NAME                                  SERVICE    STATUS    PORTS
-docker-haproxy-main-backend1-1        backend1   Up        8000/tcp
-docker-haproxy-main-backend2-1        backend2   Up        8000/tcp
-docker-haproxy-main-backend3-1        backend3   Up        8000/tcp
-docker-haproxy-main-frontend-1        frontend   Up        0.0.0.0:3000->3000/tcp
-docker-haproxy-main-haproxy-1         haproxy    Up        0.0.0.0:80->80/tcp
-```
-
-Los 5 contenedores deben estar en estado **Up**.
-
-### 7.2 Ver los logs de un servicio específico
+Para inspeccionar los logs:
 
 ```bash
-# Ver logs del backend1
+# Todos los servicios
+docker compose logs -f
+
+# Un servicio especifico
 docker compose logs backend1
-
-# Ver logs del haproxy
 docker compose logs haproxy
-
-# Ver logs del frontend
 docker compose logs frontend
 ```
 
-### 7.3 Ver los logs de todos los servicios en tiempo real
-
-```bash
-docker compose logs -f
-```
-
 ---
 
-## 8. Probar la Aplicación
+## 7. Pruebas de Funcionamiento
 
-### 8.1 Probar el Frontend (Navegador)
+### 7.1 Acceso al Frontend
 
-1. Abre tu **navegador web** (Chrome, Firefox, Edge, etc.).
-2. Ve a: **http://localhost:3000**
-3. Deberías ver:
-   - Un fondo azul con gradiente.
-   - El título "🚀 React + FastAPI + HAProxy".
-   - Un mensaje como: **"Hello from FastAPI! (served by backend1)"**.
+Abrir en el navegador:
+`http://localhost:3000`
 
-4. **Recarga la página** varias veces (`F5` o `Ctrl+R`). El nombre de la instancia debería cambiar entre `backend1`, `backend2` y `backend3`.
+Se presentara la interfaz web que consulta al backend y despliega la respuesta indicando que servidor respondio.
 
-### 8.2 Probar la API directamente (Navegador)
+### 7.2 Acceso a la API a traves de HAProxy
 
-1. Abre una nueva pestaña.
-2. Ve a: **http://localhost/api/hello**
-3. Verás una respuesta JSON como:
+Abrir en el navegador o consultar via terminal:
+`http://localhost/api/hello`
+
+Ejemplo de respuesta:
 
 ```json
 {
-  "message": "Hello from FastAPI! (served by backend2)",
-  "instance": "backend2",
-  "hostname": "a1b2c3d4e5f6"
+  "message": "Hello from FastAPI! (served by backend1)",
+  "instance": "backend1",
+  "hostname": "9d8ef2a1c0b3"
 }
 ```
-
-4. **Recarga** varias veces para ver el balanceo.
-
-### 8.3 Probar la API con curl (Terminal)
-
-Abre una terminal y ejecuta:
-
-```bash
-curl http://localhost/api/hello
-```
-
-**Salida esperada**:
-```json
-{"message":"Hello from FastAPI! (served by backend1)","instance":"backend1","hostname":"abc123"}
-```
-
-Ejecútalo varias veces para ver cómo alterna entre instancias.
 
 ---
 
-## 9. Verificar el Balanceo de Carga
+## 8. Verificacion del Balanceo de Carga
 
-### 9.1 Test rápido con múltiples peticiones
+Para comprobar que las peticiones se alternan entre las tres instancias disponibles bajo el esquema round-robin:
 
-**En Windows (PowerShell)**:
+### En PowerShell (Windows)
 
 ```powershell
-for ($i=1; $i -le 9; $i++) { 
-    Write-Host "Petición ${i}:" -NoNewline
-    (Invoke-RestMethod http://localhost/api/hello).instance 
+1..9 | ForEach-Object {
+    $res = Invoke-RestMethod http://localhost/api/hello
+    Write-Host "Peticion $_ -> $($res.instance)"
 }
 ```
 
-**En Linux/macOS (Bash)**:
+### En Bash (Linux / macOS)
 
 ```bash
 for i in {1..9}; do
-    echo "Petición $i: $(curl -s http://localhost/api/hello | grep -o '"instance":"[^"]*"')"
+    echo -n "Peticion $i: "
+    curl -s http://localhost/api/hello | grep -o '"instance":"[^"]*"'
 done
 ```
 
-**Salida esperada** (patrón round-robin):
-
-```
-Petición 1: backend1
-Petición 2: backend2
-Petición 3: backend3
-Petición 4: backend1
-Petición 5: backend2
-Petición 6: backend3
-Petición 7: backend1
-Petición 8: backend2
-Petición 9: backend3
-```
-
-### 9.2 ¿Qué demuestra esto?
-
-- Las peticiones se **distribuyen equitativamente** entre los 3 backends.
-- El algoritmo **round-robin** alterna en orden: 1 → 2 → 3 → 1 → 2 → 3...
-- Ningún backend recibe más carga que otro.
+Resultado esperado: la propiedad `instance` ira alternando secuencialmente entre `backend1`, `backend2` y `backend3`.
 
 ---
 
-## 10. Monitorear con HAProxy Stats
+## 9. Monitoreo en HAProxy Stats
 
-### 10.1 Acceder al Dashboard
+El balanceador expone una consola de monitoreo en tiempo real:
 
-1. Abre tu navegador.
-2. Ve a: **http://localhost/stats**
-3. Verás el dashboard de HAProxy con estadísticas en tiempo real.
+- URL: `http://localhost/stats`
+- Frecuencia de refresco: Cada 5 segundos.
 
-### 10.2 ¿Qué información muestra?
-
-- **Sesiones actuales**: Cuántas conexiones hay activas.
-- **Bytes in/out**: Tráfico de datos.
-- **Status de cada backend**: Si está UP (🟢) o DOWN (🔴).
-- **Peticiones por backend**: Cuántas peticiones ha recibido cada instancia.
-- **Tiempos de respuesta**: Latencia promedio de cada backend.
-
-### 10.3 Estadísticas en tiempo real
-
-El dashboard se auto-refresca cada 5 segundos. Puedes ejecutar el test de carga y observar cómo las métricas cambian en tiempo real.
+Informacion disponible:
+- Estado operativo de cada servidor (`UP` o `DOWN`).
+- Total de peticiones recibidas y distribuidas por cada nodo.
+- Tiempos de respuesta y volumen de bytes procesados.
 
 ---
 
-## 11. Pruebas de Carga con JMeter
+## 10. Pruebas de Rendimiento con JMeter
 
-### 11.1 Instalar Apache JMeter
+### 10.1 Preparacion
 
-#### Descargar
+1. Descargar Apache JMeter desde https://jmeter.apache.org/download_jmeter.cgi
+2. Descomprimir el archivo en una ruta accesible.
+3. Ejecutar el binario correspondiente:
+   - Windows: `bin/jmeter.bat`
+   - Linux/macOS: `bin/jmeter.sh`
 
-1. Ve a https://jmeter.apache.org/download_jmeter.cgi
-2. Descarga el archivo ZIP de la sección **Binaries** (ej: `apache-jmeter-5.6.3.zip`).
-3. Descomprime el ZIP en una ubicación conveniente (ej: `C:\jmeter`).
+### 10.2 Carga del Plan
 
-#### Requisito: Java
+1. Ir a **File -> Open**.
+2. Navegar hasta `docker-haproxy-main/jmeter/haproxy_load_test.jmx`.
+3. Seleccionar el archivo y abrirlo.
 
-JMeter necesita **Java 8+** instalado. Verifica con:
+### 10.3 Parametros de la Prueba
 
-```bash
-java -version
-```
+El plan cuenta con la siguiente configuracion base:
+- Grupo de hilos (Thread Group): 20 usuarios concurrentes.
+- Periodo de subida (Ramp-Up): 10 segundos.
+- Contador de bucles (Loop Count): 50 iteraciones por hilo.
+- Total de solicitudes: 1,000 peticiones HTTP GET a `http://localhost:80/api/hello`.
 
-Si no tienes Java, descárgalo desde https://adoptium.net/
+### 10.4 Ejecucion y Analisis
 
-### 11.2 Abrir JMeter
-
-#### En Windows
-
-```bash
-C:\jmeter\bin\jmeter.bat
-```
-
-O navega a la carpeta `bin` del JMeter y haz doble clic en `jmeter.bat`.
-
-#### En macOS/Linux
-
-```bash
-/ruta/a/jmeter/bin/jmeter.sh
-```
-
-### 11.3 Cargar el Plan de Pruebas
-
-1. En JMeter, ve a **File → Open** (o `Ctrl+O`).
-2. Navega hasta la carpeta del proyecto: `docker-haproxy-main/jmeter/`.
-3. Selecciona el archivo `haproxy_load_test.jmx`.
-4. Haz clic en **Open**.
-
-### 11.4 Revisar la Configuración del Test
-
-En el panel izquierdo verás:
-
-```
-🧪 HAProxy Load Test Plan
-└── 👥 Concurrent Users (Thread Group)
-    ├── 🌐 GET /api/hello (HTTP Request)
-    ├── 🌳 View Results Tree (Listener)
-    ├── 📊 Summary Report (Listener)
-    └── 📈 Response Time Graph (Listener)
-```
-
-**Parámetros del Thread Group**:
-- **Number of Threads**: 20 (usuarios concurrentes)
-- **Ramp-Up Period**: 10 segundos
-- **Loop Count**: 50
-
-Esto significa: JMeter creará 20 usuarios virtuales en 10 segundos, y cada uno hará 50 peticiones = **1000 peticiones totales**.
-
-### 11.5 Ejecutar las Pruebas
-
-1. **Asegúrate** de que los contenedores Docker están corriendo.
-2. En JMeter, haz clic en el botón verde **▶ Start** (o `Ctrl+R`).
-3. Espera a que termine (verás el progreso en la esquina superior derecha).
-
-### 11.6 Ver los Resultados
-
-#### View Results Tree
-
-- Haz clic en **View Results Tree** en el panel izquierdo.
-- Verás cada petición individual con:
-  - ✅ Verde = exitosa
-  - ❌ Roja = fallida
-- Haz clic en una petición para ver los detalles del request y response.
-
-#### Summary Report
-
-- Haz clic en **Summary Report** en el panel izquierdo.
-- Verás una tabla con métricas agregadas:
-
-| Métrica | Descripción |
-|---------|-------------|
-| **# Samples** | Número total de peticiones |
-| **Average** | Tiempo promedio de respuesta (ms) |
-| **Min** | Tiempo mínimo de respuesta (ms) |
-| **Max** | Tiempo máximo de respuesta (ms) |
-| **Std. Dev.** | Desviación estándar |
-| **Error %** | Porcentaje de errores |
-| **Throughput** | Peticiones por segundo |
-| **KB/sec** | Kilobytes por segundo |
-
-#### Response Time Graph
-
-- Haz clic en **Response Time Graph** en el panel izquierdo.
-- Haz clic en el botón **Display Graph**.
-- Verás una gráfica del tiempo de respuesta a lo largo del tiempo.
-
-### 11.7 Experimentar con Diferentes Configuraciones
-
-Puedes modificar los parámetros del Thread Group para probar diferentes escenarios:
-
-| Escenario | Threads | Loops | Total Requests |
-|-----------|---------|-------|---------------|
-| Carga baja | 5 | 20 | 100 |
-| Carga media | 20 | 50 | 1,000 |
-| Carga alta | 50 | 100 | 5,000 |
-| Estrés | 100 | 200 | 20,000 |
-
-Para modificar: haz clic en **Concurrent Users** en el panel izquierdo y cambia los valores.
-
-### 11.8 Guardar Resultados
-
-Para guardar los resultados en un archivo:
-
-1. Haz clic en un Listener (ej: Summary Report).
-2. En el campo **"Write results to file"**, escribe una ruta como `results.csv`.
-3. Ejecuta las pruebas.
-4. El archivo CSV contendrá todos los datos para análisis posterior.
+1. Presionar el boton **Start** (icono de reproduccion verde o `Ctrl+R`).
+2. Una vez concluida la prueba, revisar los componentes de resultados:
+   - **Summary Report**: Evaluar throughput, porcentaje de error (debe mantenerse en 0%) y tiempos promedio de respuesta.
+   - **Response Time Graph**: Visualizar la dispersion de tiempos de respuesta en el tiempo.
+   - **View Results Tree**: Examinar el codigo de estado y cuerpo de peticiones individuales.
 
 ---
 
-## 12. Comandos Docker Útiles
+## 11. Comandos Utiles de Docker
 
-### Gestión de Contenedores
+### Gestion de Contenedores
 
 ```bash
-# Ver contenedores activos
+# Ver contenedores en ejecucion
 docker compose ps
 
-# Ver TODOS los contenedores (incluidos los detenidos)
+# Ver todos los contenedores (incluyendo detenidos)
 docker compose ps -a
-
-# Levantar contenedores (sin reconstruir)
-docker compose up
-
-# Levantar contenedores (reconstruyendo las imágenes)
-docker compose up --build
-
-# Levantar en segundo plano
-docker compose up --build -d
-
-# Detener contenedores (sin eliminarlos)
-docker compose stop
-
-# Detener y eliminar contenedores, redes y volúmenes
-docker compose down
 
 # Reiniciar todos los servicios
 docker compose restart
 
-# Reiniciar un servicio específico
-docker compose restart backend1
+# Reiniciar un contenedor especifico
+docker compose restart backend2
 ```
 
-### Logs
+### Inspeccion de Recursos
 
 ```bash
-# Ver logs de todos los servicios
-docker compose logs
+# Ver consumo de CPU y memoria de los contenedores
+docker stats
 
-# Ver logs en tiempo real
-docker compose logs -f
-
-# Ver logs de un servicio específico
-docker compose logs frontend
-docker compose logs haproxy
-docker compose logs backend1
-
-# Ver las últimas 50 líneas de un servicio
-docker compose logs --tail 50 backend1
-```
-
-### Imágenes
-
-```bash
-# Listar imágenes descargadas
-docker images
-
-# Eliminar imágenes no utilizadas
-docker image prune
-
-# Reconstruir la imagen de un servicio específico
-docker compose build backend1
-```
-
-### Redes
-
-```bash
-# Listar redes de Docker
+# Ver redes activas de Docker
 docker network ls
 
-# Inspeccionar la red del proyecto
+# Inspeccionar la red interna del proyecto
 docker network inspect docker-haproxy-main_app-net
 ```
 
-### Acceder a un Contenedor
+### Ejecucion de Comandos Internos
 
 ```bash
-# Abrir una terminal dentro de un contenedor
+# Acceder a la shell de un backend
 docker compose exec backend1 sh
 
-# Ejecutar un comando dentro de un contenedor
+# Comprobar version de Python dentro del backend
 docker compose exec backend1 python --version
-docker compose exec frontend node --version
+
+# Acceder a la shell del frontend
+docker compose exec frontend sh
 ```
 
 ---
 
-## 13. Detener y Limpiar Todo
+## 12. Detencion y Limpieza
 
-### 13.1 Detener los contenedores
-
-Si los contenedores están corriendo en primer plano (sin `-d`), presiona `Ctrl+C` en la terminal donde ejecutaste `docker compose up`.
-
-Si están en segundo plano:
+### Detener los servicios sin eliminarlos
 
 ```bash
 docker compose stop
 ```
 
-### 13.2 Detener y eliminar todo
+### Detener y eliminar contenedores y redes
 
 ```bash
 docker compose down
 ```
 
-Esto elimina:
-- ✅ Todos los contenedores creados
-- ✅ La red `app-net`
-- ❌ No elimina las imágenes (para no tener que descargarlas de nuevo)
-
-### 13.3 Eliminar todo incluyendo imágenes
+### Eliminar contenedores, redes e imagenes generadas
 
 ```bash
 docker compose down --rmi all
 ```
 
-### 13.4 Limpieza profunda de Docker
-
-```bash
-# Eliminar contenedores detenidos, redes no usadas, imágenes sin referencia y caché
-docker system prune -a
-```
-
-> **⚠ Cuidado**: Este comando elimina TODOS los recursos Docker no utilizados, no solo los de este proyecto.
-
 ---
 
-## 14. Solución de Problemas
+## 13. Solucion de Problemas Frecuentes
 
-### ❌ "Cannot connect to the Docker daemon"
+### Error: "Cannot connect to the Docker daemon"
 
-**Causa**: Docker Desktop no está corriendo.
-**Solución**: Abre Docker Desktop y espera a que inicie completamente.
+- **Causa**: El servicio de Docker Desktop o el demonio dockerd no se encuentra en ejecucion.
+- **Solucion**: Iniciar Docker Desktop y aguardar a que el estado confirme que el motor esta activo antes de volver a ejecutar comandos de Docker.
 
-### ❌ "port is already allocated" (puerto 80 o 3000)
+### Error: "port is already allocated" (conflicto en puerto 80 o 3000)
 
-**Causa**: Otra aplicación está usando el puerto.
-**Solución**:
+- **Causa**: Otro proceso en el host (como IIS, Apache o un servidor web local) ya esta escuchando en el puerto solicitado.
+- **Solucion**:
+  - En Windows, identificar que proceso ocupa el puerto:
+    ```cmd
+    netstat -ano | findstr :80
+    ```
+  - Detener el proceso o servicio conflictivo, o bien reasignar el puerto en `docker-compose.yml` (por ejemplo, cambiando `"80:80"` por `"8080:80"`).
 
-```bash
-# Ver qué proceso usa el puerto 80 (Windows)
-netstat -ano | findstr ":80"
+### El frontend reporta "Fallo en la llamada a la API"
 
-# Ver qué proceso usa el puerto 80 (Linux/macOS)
-lsof -i :80
-```
+- **Causa**: El frontend no logra resolver o comunicarse con el proxy de HAProxy.
+- **Solucion**:
+  1. Verificar que HAProxy y las tres instancias esten arriba mediante `docker compose ps`.
+  2. Probar el endpoint directamente desde la terminal con `curl http://localhost/api/hello`.
+  3. Comprobar los logs de HAProxy con `docker compose logs haproxy`.
 
-Cierra la aplicación que usa el puerto, o cambia el puerto en `docker-compose.yml`:
-```yaml
-ports:
-  - "8080:80"   # Cambia 80 por 8080
-```
+### Las peticiones no balancean y responden siempre desde la misma instancia
 
-### ❌ "no such file or directory" al construir
-
-**Causa**: Estás ejecutando el comando desde la carpeta incorrecta.
-**Solución**: Asegúrate de estar en la carpeta `docker-haproxy-main`:
-```bash
-cd "C:\Users\TU_USUARIO\Desktop\Taller balanceo de carga\docker-haproxy-main"
-```
-
-### ❌ El frontend muestra "Fallo en la llamada a la API"
-
-**Causa**: El frontend no puede comunicarse con HAProxy.
-**Solución**:
-1. Verifica que HAProxy esté corriendo: `docker compose ps`
-2. Verifica que los backends estén corriendo: `docker compose logs backend1`
-3. Prueba la API directamente: `curl http://localhost/api/hello`
-
-### ❌ JMeter no conecta a localhost:80
-
-**Causa**: Los contenedores no están corriendo o HAProxy no está escuchando en el puerto 80.
-**Solución**:
-1. Verifica: `docker compose ps`
-2. Prueba: `curl http://localhost/api/hello`
-3. Si funciona con curl pero no con JMeter, revisa que el host en JMeter sea `localhost` y el puerto `80`.
-
-### ❌ Las imágenes tardan mucho en construirse
-
-**Causa**: Primera ejecución, se descargan las imágenes base.
-**Solución**: Es normal la primera vez. Las ejecuciones siguientes serán mucho más rápidas gracias al caché de Docker.
-
----
-
-> **💡 Tip**: Si tienes algún problema no listado aquí, revisa los logs con `docker compose logs -f` para obtener más información sobre el error.
-
----
+- **Causa**: Health checks fallando o contenedores no registrados correctamente en el pool.
+- **Solucion**:
+  1. Ingresar a `http://localhost/stats` y verificar que los tres backends aparezcan con estado `UP`.
+  2. Si alguno figura como `DOWN`, revisar sus logs con `docker compose logs backend1` (o el numero correspondiente).

@@ -41,7 +41,7 @@ function App() {
 
   return (
     <div style={styles.wrapper}>
-      <h1 style={styles.heading}>🚀 React + FastAPI + HAProxy</h1>
+      <h1 style={styles.heading}>React + FastAPI + HAProxy</h1>
       <p style={styles.message}>{message}</p>
     </div>
   );
