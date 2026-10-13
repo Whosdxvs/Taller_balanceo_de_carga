@@ -1,0 +1,47 @@
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - haproxy
+    networks:
+      - app-net
+
+  backend1:
+    build: ./backend
+    environment:
+      - INSTANCE_NAME=backend1
+    networks:
+      - app-net
+
+  backend2:
+    build: ./backend
+    environment:
+      - INSTANCE_NAME=backend2
+    networks:
+      - app-net
+
+  backend3:
+    build: ./backend
+    environment:
+      - INSTANCE_NAME=backend3
+    networks:
+      - app-net
+
+  haproxy:
+    image: haproxy:2.8
+    volumes:
+      - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    ports:
+      - "80:80"
+    depends_on:
+      - backend1
+      - backend2
+      - backend3
+    networks:
+      - app-net
+
+networks:
+  app-net:
+    driver: bridge
